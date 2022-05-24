@@ -1,0 +1,473 @@
+SQL> alter session set "_ORACLE_SCRIPT"=true;
+
+Session modifiée.
+
+SQL> create tablespace mini_prj datafile 'C:\Oracle\Mini-Projet2\mini_prj' size 10M;
+
+Tablespace créé.
+
+SQL> create role parking_r;
+
+Rôle créé.
+
+SQL> grant create session, create table to parking;
+grant create session, create table to parking
+                                      *
+ERREUR à la ligne 1 :
+ORA-01917: l'utilisateur ou le rôle 'PARKING' n'existe pas 
+
+
+SQL> grant create session, create table to parking_r;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> create profile parking_p limit
+  2    2  sessions_per_user unlimited
+  3    3  connect_time unlimited
+  4    4  failed_login_attempts 3
+  5    5  password_reuse_time 7
+  6    6  password_reuse_max 2
+  7   password_grace_time 3;
+  2  sessions_per_user unlimited
+  *
+ERREUR à la ligne 2 :
+ORA-02376: ressource erronée ou redondante 
+
+
+SQL> create profile parking_p limit
+  2      sessions_per_user unlimited
+  3      connect_time unlimited
+  4  failed_login_attempts 3
+  5  passwrord_reuse_time 7
+  6  passwrord_reuse_max 2
+  7  passwrord_grace_time 3;
+passwrord_reuse_time 7
+*
+ERREUR à la ligne 5 :
+ORA-02376: ressource erronée ou redondante 
+
+
+SQL> create profile parking_p limit
+  2      sessions_per_user unlimited
+  3      connect_time unlimited
+  4  failed_login_attempts 3
+  5  password_reuse_time 7
+  6  password_reuse_max 2
+  7  password_grace_time 3;
+
+Profil créé.
+
+SQL> create user carrefour identified by park
+  2  default tablespace minprj
+  3  profile parking_p;
+create user carrefour identified by park
+*
+ERREUR à la ligne 1 :
+ORA-00959: le tablespace 'MINPRJ' n'existe pas 
+
+
+SQL> create user carrefour identified by park
+  2  default tablespace mini_prj
+  3  profile parking_p;
+
+Utilisateur créé.
+
+SQL> alter user carrefour default role parking_r;
+alter user carrefour default role parking_r
+*
+ERREUR à la ligne 1 :
+ORA-01955: DEFAULT ROLE 'PARKING_R' non accordé à utilisateur 
+
+
+SQL> grant parking_r to carrefour;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> alter user carrefour default role parking_r;
+
+Utilisateur modifié.
+
+SQL> conn carrefour/park;
+Connecté.
+SQL> create table place (id number,num number, dispo varchar(5)) tablespace mini_prj;
+
+Table créée.
+
+SQL> insert into place values (1,0,oui),(2,0,oui),(3,0,oui);
+insert into place values (1,0,oui),(2,0,oui),(3,0,oui)
+                                  *
+ERREUR à la ligne 1 :
+ORA-00933: la commande SQL ne se termine pas correctement 
+
+
+SQL> insert into place values (1,0,oui);
+insert into place values (1,0,oui)
+                              *
+ERREUR à la ligne 1 :
+ORA-00984: un nom de colonne n'est pas autorisé ici 
+
+
+SQL> insert into place values (1,0,'oui');
+insert into place values (1,0,'oui')
+            *
+ERREUR à la ligne 1 :
+ORA-01950: pas de privilèges sur le tablespace 'MINI_PRJ' 
+
+
+SQL> conn sys/oracle;
+ERROR:
+ORA-28009: la connexion avec SYS doit être remplacée par une connexion avec 
+SYSDBA ou SYSOPER 
+
+
+Avertissement : vous n'êtes plus connecté à ORACLE.
+SQL> conn sys/oracle as sysdba;
+Connecté.
+SQL> grant select,insert on carrefour.place to carrefour;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> conn carrefour/park;
+Connecté.
+SQL> insert into place values (1,0,'oui');
+insert into place values (1,0,'oui')
+            *
+ERREUR à la ligne 1 :
+ORA-01950: pas de privilèges sur le tablespace 'MINI_PRJ' 
+
+
+SQL> alter user carrefour quota 5M on mini_prj;
+alter user carrefour quota 5M on mini_prj
+*
+ERREUR à la ligne 1 :
+ORA-01031: privilèges insuffisants 
+
+
+SQL> conn sys/oracle as sysdba;
+Connecté.
+SQL> alter user carrefour quota 5M on mini_prj;
+
+Utilisateur modifié.
+
+SQL> conn carrefour/park;
+Connecté.
+SQL> insert into place values (1,0,'oui');
+
+1 ligne créée.
+
+SQL> select * from place;
+
+        ID        NUM DISPO                                                     
+---------- ---------- -----                                                     
+         1          0 oui                                                       
+
+SQL> insert into place values (2,0,'oui');
+
+1 ligne créée.
+
+SQL> insert into place values (3,0,'oui');
+
+1 ligne créée.
+
+SQL> select * from place;
+
+        ID        NUM DISPO                                                     
+---------- ---------- -----                                                     
+         1          0 oui                                                       
+         2          0 oui                                                       
+         3          0 oui                                                       
+
+SQL> show user
+USER est "CARREFOUR"
+SQL> disc
+Déconnecté de Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+SQL> conn /as sysdba;
+Connecté.
+SQL> create role control;
+create role control
+            *
+ERREUR à la ligne 1 :
+ORA-65096: nom utilisateur ou de rôle commun non valide 
+
+
+SQL> alter session set "_ORACLE_SCRIPT"=true;
+
+Session modifiée.
+
+SQL> create role control;
+
+Rôle créé.
+
+SQL> grant create session,create table to control;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> create profile controleur limit
+  2      sessions_per_user unlimited
+  3      connect_time 480 // 8hr
+  4      failed_login_attempts 3
+  5      password_reuse_time 3
+  6      password_reuse_max 5
+  7      password_grace_time 1;
+    connect_time 480 // 8hr
+                     *
+ERREUR à la ligne 3 :
+ORA-02376: ressource erronée ou redondante 
+
+
+SQL> create profile controleur limit
+  2      sessions_per_user unlimited
+  3      failed_login_attempts 3
+  4      password_reuse_time 3
+  5      password_reuse_max 5
+  6      password_grace_time 1
+  7      connect_time 480;
+
+Profil créé.
+
+SQL> create user control identified by cont
+  2  default tablespace mini_prj
+  3  profile controleur;
+create user control identified by cont
+            *
+ERREUR à la ligne 1 :
+ORA-01920: nom utilisateur 'CONTROL' en conflit avec autre nom utilisateur ou 
+de rôle 
+
+
+SQL> select username from dba_users where username='CONTROL';
+
+aucune ligne sélectionnée
+
+SQL> select username from dba_users;
+
+USERNAME                                                                        
+--------------------------------------------------------------------------------
+SYS                                                                             
+SYSTEM                                                                          
+XS$NULL                                                                         
+OJVMSYS                                                                         
+LBACSYS                                                                         
+OUTLN                                                                           
+DBSNMP                                                                          
+APPQOSSYS                                                                       
+DBSFWUSER                                                                       
+GGSYS                                                                           
+ANONYMOUS                                                                       
+
+USERNAME                                                                        
+--------------------------------------------------------------------------------
+CTXSYS                                                                          
+DVSYS                                                                           
+DVF                                                                             
+AUDSYS                                                                          
+GSMADMIN_INTERNAL                                                               
+OLAPSYS                                                                         
+MDSYS                                                                           
+XDB                                                                             
+WMSYS                                                                           
+GSMCATUSER                                                                      
+MDDATA                                                                          
+
+USERNAME                                                                        
+--------------------------------------------------------------------------------
+SYSBACKUP                                                                       
+REMOTE_SCHEDULER_AGENT                                                          
+GSMUSER                                                                         
+SYSRAC                                                                          
+GSMROOTUSER                                                                     
+USER2                                                                           
+SI_INFORMTN_SCHEMA                                                              
+AHMED                                                                           
+DIP                                                                             
+ORDPLUGINS                                                                      
+SYSKM                                                                           
+
+USERNAME                                                                        
+--------------------------------------------------------------------------------
+DGPDB_INT                                                                       
+ORDDATA                                                                         
+ORACLE_OCM                                                                      
+SYS$UMF                                                                         
+SYSDG                                                                           
+ORDSYS                                                                          
+USER1                                                                           
+CARREFOUR                                                                       
+
+41 lignes sélectionnées.
+
+SQL> create user controleur identified by cont
+  2  default tablespace mini_prj
+  3  profile controleur;
+
+Utilisateur créé.
+
+SQL> alter user controleur default role controleur;
+alter user controleur default role controleur
+                                   *
+ERREUR à la ligne 1 :
+ORA-01919: le rôle 'CONTROLEUR' n'existe pas 
+
+
+SQL> alter user controleur default role control;
+alter user controleur default role control
+*
+ERREUR à la ligne 1 :
+ORA-01955: DEFAULT ROLE 'CONTROL' non accordé à utilisateur 
+
+
+SQL> grant control to controleur;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> alter user controleur default role control;
+
+Utilisateur modifié.
+
+SQL> grant select,insert,delete on carrefour.place to control;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> alter user controleur default role control;
+
+Utilisateur modifié.
+
+SQL> conn controleur/cont
+Connecté.
+SQL> create table request (num number,min number) tablespace mini_prj;
+
+Table créée.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> disc
+Déconnecté de Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+SQL> conn /as sysdba
+Connecté.
+SQL> create role client;
+create role client
+            *
+ERREUR à la ligne 1 :
+ORA-65096: nom utilisateur ou de rôle commun non valide 
+
+
+SQL> alter session set "_ORACLE_SCRIPT"=true;
+
+Session modifiée.
+
+SQL> create role client;
+
+Rôle créé.
+
+SQL> grant create session to client;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> create profile client_p limit
+  2      sessions_per_user unlimited
+  3      connect_time 15
+  4      failed_login_attempts 2;
+
+Profil créé.
+
+SQL> create user user1 identified by user
+  2  default tablespace mini_prj
+  3  profile client_p;
+create user user1 identified by user
+            *
+ERREUR à la ligne 1 :
+ORA-01920: nom utilisateur 'USER1' en conflit avec autre nom utilisateur ou de 
+rôle 
+
+
+SQL> select username from dba_users where username='USER1';
+
+USERNAME                                                                        
+--------------------------------------------------------------------------------
+USER1                                                                           
+
+SQL> drop user user1 cascade;
+
+Utilisateur supprimé.
+
+SQL> drop user user2 cascade;
+
+Utilisateur supprimé.
+
+SQL> drop user user3 cascade;
+drop user user3 cascade
+          *
+ERREUR à la ligne 1 :
+ORA-01918: l'utilisateur 'USER3' n'existe pas 
+
+
+SQL> drop user user4 cascade;
+drop user user4 cascade
+          *
+ERREUR à la ligne 1 :
+ORA-01918: l'utilisateur 'USER4' n'existe pas 
+
+
+SQL> create user user1 identified by user
+  2  default tablespace mini_prj
+  3  profile client_p;
+
+Utilisateur créé.
+
+SQL> create user user2 identified by user
+  2  default tablespace mini_prj
+  3  profile client_p;
+
+Utilisateur créé.
+
+SQL> create user user3 identified by user
+  2  default tablespace mini_prj
+  3  profile client_p;
+
+Utilisateur créé.
+
+SQL> create user user4 identified by user
+  2  default tablespace mini_prj
+  3  profile client_p;
+
+Utilisateur créé.
+
+SQL> grant select on carrefour.place to user1,user2,user3,user4;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> grant insert on control.request to user1,user2,user3,user4;
+grant insert on control.request to user1,user2,user3,user4
+                        *
+ERREUR à la ligne 1 :
+ORA-00942: Table ou vue inexistante 
+
+
+SQL> grant insert on controleur.request to user1,user2,user3,user4;
+
+Autorisation de privilèges (GRANT) acceptée.
+
+SQL> grant client to user1,user2,user3,user4;
+
+Autorisation de privilÞges (GRANT) acceptÚe.
+
+SQL> alter user user1 default role  client;
+
+Utilisateur modifiÚ.
+
+SQL> alter user user2 default role  client;
+
+Utilisateur modifiÚ.
+
+SQL> alter user user3 default role  client;
+
+Utilisateur modifiÚ.
+
+SQL> alter user user4 default role  client;
+
+Utilisateur modifiÚ.
+
+SQL> spool off
